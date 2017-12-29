@@ -8,6 +8,6 @@ class EventEmitter(object):
         self._event_callbacks.setdefault(event_name, [])
         self._event_callbacks[event_name].append(callback)
 
-    def dispatch(self, event_name):
+    def dispatch(self, event_name, *args):
         for callback in self._event_callbacks[event_name]:
-            callback()
+            callback(*args)
