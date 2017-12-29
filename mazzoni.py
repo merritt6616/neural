@@ -4,14 +4,16 @@ http://www.pnas.org/content/88/10/4433.full.pdf
 """
 
 import numpy as np
+from event_emitter import EventEmitter
 
-class Synapse(object):
+class Synapse(EventEmitter):
   def __init__(self, input_neuron, output_neuron, weight=None):
+    super()
     self.input_neuron = input_neuron
     self.output_neuron = output_neuron
     self.weight = weight if weight is not None else np.random.random()
 
-class Neuron(object): pass
+class Neuron(EventEmitter): pass
 
 class Context(object):
   input_neurons = None
@@ -21,7 +23,7 @@ class Context(object):
   _incoming_synapses = None
   _outgoing_synapses = None
 
-  event_queues = None
+  event_callbacks = None
 
   def __init__(self):
     self.input_neurons = []
@@ -29,26 +31,21 @@ class Context(object):
     self.synapses = []
     self._incoming_synapses = {}
     self._outgoing_synapses = {}
-    self.event_queues = {}
+    self.event_callbacks = {}
 
-  def connect(self, neuron1, neuron2, weight=None):
-    s = Synapse(neuron1, neuron2, weight)
+  def connect(self, sending_neuron, target_neuron, weight=None):
+    s = Synapse(sending_neuron, target_neuron, weight)
     self.synapses.append(s)
 
-    self._incoming_synapses.setdefault(neuron2, [])
-    self._incoming_synapses[neuron2].append(s)
+    self._incoming_synapses.setdefault(target_neuron, [])
+    self._incoming_synapses[target_neuron].append(s)
 
-    self._outgoing_synapses.setdefault(neuron1, [])
-    self._outgoing_synapses[neuron1].append(s)
+    self._outgoing_synapses.setdefault(sending_neuron, [])
+    self._outgoing_synapses[sending_neuron].append(s)
 
-  def eventloop(self):
-    while True:
-      # consume time step queue
-      self.event_queues.set_default('time_step', [])
 
-      while len(self.event_queues['time_step']):
-        callback = self.event_queues['time_step'].pop(0)
-        callback()
+
+
 
 ctx = Context()
 for i in xrange(4):
